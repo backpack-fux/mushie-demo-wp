@@ -132,9 +132,9 @@ function thank_you()
             $order = wc_get_order($order_id);
             $order->payment_complete();
             $order_note1 = 'Payment Intent: ' . sanitize_text_field($_REQUEST['payment_intent']);
-            $order_note2 = 'Payment Intent Client Secret: ' . sanitize_text_field($_REQUEST['payment_intent_client_secret']);
+            //$order_note2 = 'Payment Intent Client Secret: ' . sanitize_text_field($_REQUEST['payment_intent_client_secret']);
             $order->add_order_note($order_note1);
-            $order->add_order_note($order_note2);
+            //$order->add_order_note($order_note2);
             return '<p>Thank you for your payment. Your order has been completed.</p>';
         }
     }
