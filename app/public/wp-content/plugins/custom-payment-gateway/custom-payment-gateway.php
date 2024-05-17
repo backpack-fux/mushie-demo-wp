@@ -1,22 +1,21 @@
 <?php
-/**
+/*
  * Plugin Name: WooCommerce Custom Payment Gateway
  * Plugin URI: 
  * Description: WooCommerce Custom Payment Gateway
- * Version: 1.0.11
  * Author: BP - Devin
  * Author URI: 
+ * Version: 1.0.10
  */
 
 add_filter('woocommerce_payment_gateways', 'client33_add_gateway_class');
+add_action('plugins_loaded', 'client33_init_gateway_class');
 
 function client33_add_gateway_class($gateways)
 {
     $gateways[] = 'WC_Creditcard_Gateway';
     return $gateways;
 }
-
-add_action('plugins_loaded', 'client33_init_gateway_class');
 
 function client33_init_gateway_class()
 {
@@ -45,36 +44,36 @@ function client33_init_gateway_class()
         {
             $this->form_fields = array(
                 'enabled' => array(
-                    'title'       => 'Enable/Disable',
-                    'label'       => 'Enable Payment Gateway',
-                    'type'        => 'checkbox',
+                    'title' => 'Enable/Disable',
+                    'label' => 'Enable Payment Gateway',
+                    'type' => 'checkbox',
                     'description' => '',
-                    'default'     => 'no'
+                    'default' => 'no'
                 ),
                 'title' => array(
-                    'title'       => 'Title',
-                    'type'        => 'text',
+                    'title' => 'Title',
+                    'type' => 'text',
                     'description' => 'This controls the title which the user sees during checkout.',
-                    'default'     => 'Credit Card',
-                    'desc_tip'    => true
+                    'default' => 'Credit Card',
+                    'desc_tip' => true
                 ),
                 'description' => array(
-                    'title'       => 'Description',
-                    'type'        => 'textarea',
+                    'title' => 'Description',
+                    'type' => 'textarea',
                     'description' => 'This controls the description which the user sees during checkout.',
-                    'default'     => 'Pay with your credit card via our super-cool payment gateway.'
+                    'default' => 'Pay with your credit card via our super-cool payment gateway.'
                 )
             );
         }
 
         public function payment_fields()
         {
-            // Add custom payment fields here
+            // Intentionally left blank
         }
 
         public function payment_scripts()
         {
-            // Add custom scripts here
+            // Intentionally left blank  
         }
 
         public function validate_fields()
@@ -84,27 +83,15 @@ function client33_init_gateway_class()
 
         public function process_payment($order_id)
         {
-            $order = wc_get_order($order_id);
-
-            // Mark as on-hold (we're awaiting the payment)
-            $order->update_status('on-hold', __('Awaiting payment', 'woocommerce'));
-
-            // Reduce stock levels
-            wc_reduce_stock_levels($order_id);
-
-            // Remove cart
-            WC()->cart->empty_cart();
-
-            // Return thank you page redirect
             return array(
-                'result'   => 'success',
-                'redirect' => $this->get_return_url($order)
+                'result' => 'success',
+                'redirect' => site_url() . '/payment/?order_ref=' . base64_encode($order_id)
             );
         }
 
         public function webhook()
         {
-            // Handle webhooks here
+            // Intentionally left blank
         }
     }
 }

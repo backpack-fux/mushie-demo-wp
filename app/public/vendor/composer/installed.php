@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'devinelliot/mushie-demo-wp',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => NULL,
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '62feb571d20f919c26662a7fb4e24f0300f4d51d',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -29,9 +29,9 @@
             'dev_requirement' => false,
         ),
         'devinelliot/mushie-demo-wp' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => NULL,
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '62feb571d20f919c26662a7fb4e24f0300f4d51d',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

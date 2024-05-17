@@ -131,8 +131,10 @@ function thank_you()
         if ($order_id > 0) {
             $order = wc_get_order($order_id);
             $order->payment_complete();
-            $order_note1 = 'Payment Intent: ' . $_REQUEST['payment_intent'];
+            $order_note1 = 'Payment Intent: ' . sanitize_text_field($_REQUEST['payment_intent']);
+            $order_note2 = 'Payment Intent Client Secret: ' . sanitize_text_field($_REQUEST['payment_intent_client_secret']);
             $order->add_order_note($order_note1);
+            $order->add_order_note($order_note2);
             return '<p>Thank you for your payment. Your order has been completed.</p>';
         }
     }
@@ -145,7 +147,7 @@ function payment_form()  // phpcs:ignore PEAR.NamingConventions.ValidFunctionNam
 
     ob_start();
     if (!empty($_REQUEST['order_ref'])) {
-        $order_id = base64_decode($_REQUEST['order_ref']);
+        $order_id = base64_decode(sanitize_text_field($_REQUEST['order_ref']));
         $order = wc_get_order($order_id);
         if ($order) {
             $order_total = $order->get_total();
