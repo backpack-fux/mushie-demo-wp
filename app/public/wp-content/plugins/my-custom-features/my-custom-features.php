@@ -155,12 +155,12 @@ function payment_form()  // phpcs:ignore PEAR.NamingConventions.ValidFunctionNam
             $order_ref = base64_encode($order_ref);
             $url = get_option('client_payment_page_url');
 
-            // Debug output for URL
-            $url = get_option('client_payment_page_url');
-            if (empty($url)) {
-                die("Error: URL is empty.");
-            }
-            echo "Debug: URL is $url";
+            // // Debug output for URL
+            // $url = get_option('client_payment_page_url');
+            // if (empty($url)) {
+            //     die("Error: URL is empty.");
+            // }
+            // echo "Debug: URL is $url";
 
             // Validate the URL
             if (filter_var($url, FILTER_VALIDATE_URL) === false) {
