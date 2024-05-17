@@ -1,0 +1,45 @@
+{
+  "name": "devinelliot/mushie-demo-wp",
+  "autoload": {
+      "psr-4": {
+          "Devinelliot\\MushieDemoWp\\": "src/"
+      }
+  },
+  "authors": [
+      {
+          "name": "Devin Elliot",
+          "email": "devinjelliot@gmail.com"
+      }
+  ],
+  "require": {
+    "wpackagist-plugin/woocommerce": "8.8.3",
+    "wpackagist-plugin/jetpack": "^13.4",
+    "composer/installers": "^2.2",
+    "custom-payment-gateway/custom-payment-gateway": "*",
+    "my-custom-features/my-custom-features": "*"
+  },
+  "repositories": [
+      {
+          "type": "composer",
+          "url": "https://wpackagist.org"
+      },
+      {
+        "type": "path",
+        "url": "wp-content/plugins/my-custom-features"
+      },
+      {
+        "type": "path",
+        "url": "wp-content/plugins/custom-payment-gateway"
+      }
+  ],
+  "extra": {
+      "installer-paths": {
+          "wp-content/plugins/{$name}/": ["type:wordpress-plugin"]
+      }
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true
+    }
+  }
+}
