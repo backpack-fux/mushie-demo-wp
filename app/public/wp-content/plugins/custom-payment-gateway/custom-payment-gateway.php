@@ -68,24 +68,61 @@ function client33_init_gateway_class()
 
         public function payment_fields()
         {
-            // Intentionally left blank
+            ?>
+            <fieldset>
+                <p class="form-row form-row-wide">
+                    <label for="cc_number"><?php _e('Card number', 'woocommerce'); ?> <span class="required">*</span></label>
+                    <input id="cc_number" name="cc_number" type="text" autocomplete="off" placeholder="1234 1234 1234 1234">
+                    <img src="https://example.com/path-to-your-icons/visa.png" alt="Visa">
+                    <img src="https://example.com/path-to-your-icons/mastercard.png" alt="MasterCard">
+                    <img src="https://example.com/path-to-your-icons/amex.png" alt="American Express">
+                    <img src="https://example.com/path-to-your-icons/elo.png" alt="Elo">
+                </p>
+                <p class="form-row form-row-first">
+                    <label for="cc_expiry"><?php _e('Expiration', 'woocommerce'); ?> <span class="required">*</span></label>
+                    <input id="cc_expiry" name="cc_expiry" type="text" autocomplete="off" placeholder="MM / YY">
+                </p>
+                <p class="form-row form-row-last">
+                    <label for="cc_cvc"><?php _e('CVC', 'woocommerce'); ?> <span class="required">*</span></label>
+                    <input id="cc_cvc" name="cc_cvc" type="text" autocomplete="off" placeholder="CVC">
+                    <img src="https://example.com/path-to-your-icons/cvc.png" alt="CVC">
+                </p>
+                <div class="clear"></div>
+            </fieldset>
+            <?php
         }
 
         public function payment_scripts()
         {
-            // Intentionally left blank  
+            if (!is_checkout() || !$this->enabled) {
+                return;
+            }
         }
 
         public function validate_fields()
         {
+            if (empty($_POST['cc_number']) || empty($_POST['cc_expiry']) || empty($_POST['cc_cvc'])) {
+                wc_add_notice(__('Please fill in all required fields.', 'woocommerce'), 'error');
+                return false;
+            }
             return true;
         }
 
         public function process_payment($order_id)
         {
+            global $woocommerce;
+            $order = new WC_Order($order_id);
+            
+            // Payment is successful
+            $order->payment_complete();
+
+            // Remove cart
+            $woocommerce->cart->empty_cart();
+
+            // Return thank you page redirect
             return array(
                 'result' => 'success',
-                'redirect' => site_url() . '/payment/?order_ref=' . base64_encode($order_id)
+                'redirect' => $this->get_return_url($order)
             );
         }
 
