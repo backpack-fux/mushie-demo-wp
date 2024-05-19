@@ -17,8 +17,9 @@
 /wp-*.php
 /xmlrpc.php
 
-# Configuration
-wp-config.php
+# Configuration 
+# ** IMPORTANT ** Remove this file after prototyping for security reasons 
+#wp-config.php
 
 # Example themes
 /wp-content/themes/twenty*/

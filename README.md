@@ -4,93 +4,115 @@
 
 ## Prerequisites
 
-- Local by Flywheel: Download and install Local.
-- Node.js: Download and install Node.js.
-- Cursor: Download and install [VS Code](https://cursor.sh/).
+- PHP: Download and install PHP
+- Local by Flywheel: Download and install [Local.](https://localwp.com/)
+- Composer: Download and install [Composer](https://getcomposer.org/download/)
+- Cursor: Download and install [Cursor](https://cursor.sh/).
+
+* Embrace the 🤖 overloards
 
 ## Steps
 
-### 1. Clone the Repository
+### 1. Get the project in format for Local
 
-Clone your project repository to your local machine:
+Get a .zip of the project, you'll need it to upload the project to Local since it doesn't seem to have a direct path to git for version control \*it does have an integration for github actions
 
 ```
-git clone <repository-url>
-cd <repository-directory>
+curl -L -o repo.zip https://github.com/username/repository/archive/refs/heads/main.zip
 ```
+
+Local will create a `Local Sites` directory somewhere on your machine, this is where you'll find the project. From here you can setup git and connect the project to the repo here:
+
+```
+git clone git@github.com:newdaojones/mushie-demo-wp.git
+```
+
+- I don't see a way to do this normally and I'm done php spelunking
 
 ### 2. Setup Local Environment
 
-1. Open Local and create a new site:
+1. Open Local and create a upload the .zip file:
 
-- **Site Name**: Your project name
-- **Environment**: Preferred environment (e.g., PHP 7.4, MySQL 5.7)
-- **WordPress Version**: Latest
+![Local Setup Screenshot](image.png)
 
-  2. Configure Site Paths:
+2. Configure local domains
 
-- **Local Site Path**: Point to the cloned repository directory.
+![Local: My Setup](image-1.png)
 
-### 3. Configure wp-config.php
+- Local says SSL is set for the local environment but I get an error from the payment_fields for the credit card that says the site is not secure. 🤷🏼
 
-Ensure wp-config.php is correctly set up. If it doesn't exist, create it from wp-config-sample.php.
+### 3. Install Packages
 
-### 4. Install Dependencies
-
-<!-- you probably have this already, if not how did you get here? -->
-
-Install PHP and Node.js dependencies:
+From the root of the project run the following commands:
 
 ```
 composer install
-npm install
 ```
 
-### 5. Composer
-
-Composer is the package manager for PHP
+Our plugins are installed via composer, this will install them. When you make changes to them you'll need to run:
 
 ```
-composer install
 composer update
 ```
 
-### 6. Import Database
+### 4. Databases
 
-If you have a database dump, import it using Local's database management tool (Adminer or phpMyAdmin).
+The database data is in the zip that's been uploaded to Local. You can access the GUI for the database here:
 
-### 7. Update Database Configuration
+![Local: Databases](image-2.png)
 
-Ensure database credentials in wp-config.php match those provided by Local:
+- You may need to lookup the wp_user table to get credentials or reset them as the case may be for the WP Admin user access
 
-```
-// wp-config.php
-define('DB_NAME', 'local_db_name');
-define('DB_USER', 'local_db_user');
-define('DB_PASSWORD', 'local_db_password');
-define('DB_HOST', 'localhost');
-```
+![AdminerEvo: Database GUI](image-3.png)
 
-### 8. Start Local Site
+### 5. Start Local Site
 
 Start the site from Local and access it via the provided local URL.
 
-### 9. Additional Configuration
+### 6. WP Admin
 
-If your project requires additional configuration, such as setting up environment variables, ensure these are configured in Local's environment settings or .env file.
+Start the WP Admin from Local. You'll need access credentials to get in which can found in the above screenshot.
+
+- There's something off about which name the admin field is using, it gives an option for email or username but I MUST use username
+
+`rick_sanchez`
+`mortysucks`
+
+If this doesn't work I've only had success adding a new user. You can't just dump the db or you will dump then entire site. Tell me if there is a smarter way to do this.
 
 ### 10. Verify Setup
 
 Access the local site and verify everything is working correctly.
 
-## Troubleshooting
+---
 
-- Permissions: you need to add a user and password or try username: rick_sanchez password: mortysucks
-- Dependencies: composer should be setup to do this correctly for you, if not then we may need to talk it through,, composer is very handsy
-- Configuration: this was mostly composer effort
+# Custom Payment Gateway Plugin(s)
 
-## Useful Commands
+Where to find them in the project
 
-- Start Local Server: Local has a GUI with a start button, use that
-- Build Shit: composer install || composer update
-- Install Dependencies: composer require
+```
+path: `/app/public/wp-content/plugins/custom-payment-gateway.php`
+path: `/app/public/wp-content/plugins/my-custom-features.php`
+```
+
+### Branch: Main
+
+The basic omni widget but refactored for readability and error handling
+
+- loads it's own payment page
+- uses iframe
+- requires a customer URL provided by OMNI in the setup instructions -> we're the customer in this case
+
+### Branch: improv/ux-improvements
+
+This improvement is aimed at moving the payment fields into the checkout page so that the user can more quickly complete their checkout process. This is driven by the customer conversion difference provided by Customer 2.
+
+- payment page has been removed
+- payment_form() utility moved from my-custom-features.php to payment_fields() in custom-payment-gateway.php
+- some validation but its questionable
+
+Current status
+
+- I think it's ready for worldpay integration
+- I haven't looked at that at all yet
+- GPT seems pretty on point with the code so far 👍🏻
