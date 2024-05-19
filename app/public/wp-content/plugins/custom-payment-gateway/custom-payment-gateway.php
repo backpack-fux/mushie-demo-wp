@@ -1,28 +1,26 @@
 <?php
+
 /*
  * Plugin Name: WooCommerce Custom Payment Gateway
- * Plugin URI: 
+ * Plugin URI:
  * Description: WooCommerce Custom Payment Gateway
  * Author: BP - Devin
- * Author URI: 
- * Version: 1.0.10
+ * Author URI:
+ * Version: 1.1.0
  */
 
 add_filter('woocommerce_payment_gateways', 'client33_add_gateway_class');
 add_action('plugins_loaded', 'client33_init_gateway_class');
 
-function client33_add_gateway_class($gateways)
-{
+function client33_add_gateway_class($gateways) {
     $gateways[] = 'WC_Creditcard_Gateway';
     return $gateways;
 }
 
-function client33_init_gateway_class()
-{
+function client33_init_gateway_class() {
     class WC_Creditcard_Gateway extends WC_Payment_Gateway
     {
-        public function __construct()
-        {
+        public function __construct() {
             $this->id = 'client33';
             $this->icon = '';
             $this->has_fields = true;
@@ -38,10 +36,10 @@ function client33_init_gateway_class()
             $this->enabled = $this->get_option('enabled');
 
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+            add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
         }
 
-        public function init_form_fields()
-        {
+        public function init_form_fields() {
             $this->form_fields = array(
                 'enabled' => array(
                     'title' => 'Enable/Disable',
@@ -66,8 +64,7 @@ function client33_init_gateway_class()
             );
         }
 
-        public function payment_fields()
-        {
+        public function payment_fields() {
             ?>
             <fieldset>
                 <p class="form-row form-row-wide">
@@ -92,27 +89,72 @@ function client33_init_gateway_class()
             <?php
         }
 
-        public function payment_scripts()
-        {
+        public function payment_scripts() {
             if (!is_checkout() || !$this->enabled) {
                 return;
             }
         }
 
-        public function validate_fields()
-        {
+        public function validate_fields() {
             if (empty($_POST['cc_number']) || empty($_POST['cc_expiry']) || empty($_POST['cc_cvc'])) {
                 wc_add_notice(__('Please fill in all required fields.', 'woocommerce'), 'error');
                 return false;
             }
+
+            // Validate credit card number using Luhn algorithm
+            if (!$this->is_valid_card_number($_POST['cc_number'])) {
+                wc_add_notice(__('Invalid card number.', 'woocommerce'), 'error');
+                return false;
+            }
+
+            // Validate expiry date format
+            if (!preg_match('/^(0[1-9]|1[0-2]) \/ ([0-9]{2})$/', $_POST['cc_expiry'])) {
+                wc_add_notice(__('Invalid expiry date format. Use MM / YY.', 'woocommerce'), 'error');
+                return false;
+            }
+
+            // Validate CVC format
+            if (!preg_match('/^[0-9]{3,4}$/', $_POST['cc_cvc'])) {
+                wc_add_notice(__('Invalid CVC code.', 'woocommerce'), 'error');
+                return false;
+            }
+
             return true;
         }
 
-        public function process_payment($order_id)
-        {
+        private function is_valid_card_number($number) {
+            $number = preg_replace('/\D/', '', $number);
+            $checksum = 0;
+            $length = strlen($number);
+
+            for ($i = (2 - ($length % 2)); $i <= $length; $i += 2) {
+                $checksum += (int)($number[$i - 1]);
+            }
+
+            for ($i = ($length % 2) + 1; $i < $length; $i += 2) {
+                $digit = (int)($number[$i - 1]) * 2;
+                if ($digit < 10) {
+                    $checksum += $digit;
+                } else {
+                    $checksum += ($digit - 9);
+                }
+            }
+
+            return ($checksum % 10) === 0;
+        }
+
+        public function process_payment($order_id) {
             global $woocommerce;
             $order = new WC_Order($order_id);
-            
+
+            // Set to true to test payment error
+            $payment_error = false;
+
+            if ($payment_error) {
+                wc_add_notice(__('Payment error: ' . $payment_error, 'woocommerce'), 'error');
+                return false;
+            }
+
             // Payment is successful
             $order->payment_complete();
 
