@@ -13,19 +13,17 @@
 
 ### 1. Get the project in format for Local
 
-Get a .zip of the project, you'll need it to upload the project to Local since it doesn't seem to have a direct path to git for version control \*it does have an integration for github actions
+This part is manual but you only need to do it the first time. Get a .zip of the project from github GUI, you'll need it to upload the project to Local since it doesn't seem to have a direct path to git for version control \*it does have an integration for github actions
 
 ```
-curl -L -o repo.zip https://github.com/newdaojones/mushie-demo-wp
+https://github.com/newdaojones/mushie-demo-wp/archive
 ```
 
-Local will create a `Local Sites` directory somewhere on your machine, this is where you'll find the project. From here you can setup git and connect the project to the repo here:
+Local will create a `Local Sites` directory somewhere on your machine, this is where you'll find the project. From here you can setup git and connect the project to the repo:
 
 ```
 git clone git@github.com:newdaojones/mushie-demo-wp.git
 ```
-
-- I don't see a way to do this normally and I'm done php spelunking
 
 ### 2. Setup Local Environment
 
