@@ -16,7 +16,7 @@
 Get a .zip of the project, you'll need it to upload the project to Local since it doesn't seem to have a direct path to git for version control \*it does have an integration for github actions
 
 ```
-curl -L -o repo.zip https://github.com/username/repository/archive/refs/heads/main.zip
+curl -L -o repo.zip https://github.com/newdaojones/mushie-demo-wp
 ```
 
 Local will create a `Local Sites` directory somewhere on your machine, this is where you'll find the project. From here you can setup git and connect the project to the repo here:
@@ -114,3 +114,7 @@ Current status
 - I think it's ready for worldpay integration
 - I haven't looked at that at all yet
 - GPT seems pretty on point with the code so far 👍🏻
+
+### Worldpay
+
+- https://developer.worldpay.com/products/access/payments/card-payment/

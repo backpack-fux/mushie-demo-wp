@@ -3,7 +3,7 @@
         'name' => 'devinelliot/mushie-demo-wp',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '62feb571d20f919c26662a7fb4e24f0300f4d51d',
+        'reference' => 'ce47ceb8f1fee4dbb2a957a3b7bc86497ac1c2a0',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -31,7 +31,7 @@
         'devinelliot/mushie-demo-wp' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '62feb571d20f919c26662a7fb4e24f0300f4d51d',
+            'reference' => 'ce47ceb8f1fee4dbb2a957a3b7bc86497ac1c2a0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

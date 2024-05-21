@@ -142,8 +142,7 @@ function thank_you()
 }
 
 // Shortcode for payment form
-function payment_form()  // phpcs:ignore PEAR.NamingConventions.ValidFunctionName.FunctionNoCapital,PEAR.NamingConventions.ValidFunctionName.FunctionNameInvalid,PEAR.Commenting.FunctionComment.WrongStyle
-{
+function payment_form(){
 
     ob_start();
     if (!empty($_REQUEST['order_ref'])) {
