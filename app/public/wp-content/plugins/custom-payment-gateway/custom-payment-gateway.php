@@ -94,7 +94,6 @@ function client33_init_gateway_class() {
                 return;
             }
         }
-
         public function validate_fields() {
             if (empty($_POST['cc_number']) || empty($_POST['cc_expiry']) || empty($_POST['cc_cvc'])) {
                 wc_add_notice(__('Please fill in all required fields.', 'woocommerce'), 'error');
@@ -226,7 +225,7 @@ function client33_init_gateway_class() {
                     ),
                     'value' => array(
                         'currency' => get_woocommerce_currency(),
-                        'amount' => $order->get_total() * 100 // Assuming the API expects the amount in cents
+                        'amount' => $order->get_total()
                     )
                 )
             );
