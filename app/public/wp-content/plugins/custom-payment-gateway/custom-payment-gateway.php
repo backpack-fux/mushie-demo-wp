@@ -108,8 +108,8 @@ function client33_init_gateway_class() {
             }
 
             // Validate expiry date format
-            if (!preg_match('/^(0[1-9]|1[0-2]) \/ ([0-9]{2})$/', $_POST['cc_expiry'])) {
-                wc_add_notice(__('Invalid expiry date format. Use MM / YY.', 'woocommerce'), 'error');
+            if (!preg_match('/^(0[1-9]|1[0-2]) \/ ([0-9]{4})$/', $_POST['cc_expiry'])) {
+                wc_add_notice(__('Invalid expiry date format. Use MM / YYYY.', 'woocommerce'), 'error');
                 return false;
             }
 
@@ -143,6 +143,49 @@ function client33_init_gateway_class() {
             return ($checksum % 10) === 0;
         }
 
+        private function create_session($card_number, $expiry_month, $expiry_year, $cvc) {
+            $api_url = 'https://try.access.worldpay.com/sessions/card'; // Session API endpoint
+
+            $payload = array(
+                'identity' => 'f261c0e5-d7b0-49fd-a957-5aa449058f12',
+                'cardExpiryDate' => array(
+                    'month' => $expiry_month,
+                    'year' => $expiry_year
+                ),
+                'cvc' => $cvc,
+                'cardNumber' => $card_number
+            );
+
+            // Log the payload
+            error_log('Payload: ' . json_encode($payload));
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $api_url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Accept: application/vnd.worldpay.sessions-v1.hal+json',
+                'Content-Type: application/vnd.worldpay.sessions-v1.hal+json',
+                'X-WP-SDK: access-checkout-web/2.0.0'
+            ]);
+
+            $response = curl_exec($ch);
+            if (!$response) {
+                return ['status' => 'failed', 'message' => 'Session API request failed'];
+            }
+            curl_close($ch);
+
+            error_log('API Response: ' . $response);
+
+            $response_data = json_decode($response, true);
+            if (isset($response_data['_links']['sessions:session']['href'])) {
+                return ['status' => 'success', 'sessionUrl' => $response_data['_links']['sessions:session']['href']];
+            } else {
+                return ['status' => 'failed', 'message' => 'Session URL not found in response'];
+            }
+        }
+
         public function process_payment($order_id) {
             global $woocommerce;
             $order = new WC_Order($order_id);
@@ -152,15 +195,40 @@ function client33_init_gateway_class() {
             $cc_expiry = sanitize_text_field($_POST['cc_expiry']);
             $cc_cvc = sanitize_text_field($_POST['cc_cvc']);
 
-            // Prepare payload for Pylon
+            // Extract month and year from expiry date
+            list($expiry_month, $expiry_year) = explode(' / ', $cc_expiry);
+
+            // Create session
+            $session_response = $this->create_session($cc_number, $expiry_month, $expiry_year, $cc_cvc);
+            if ($session_response['status'] !== 'success') {
+                wc_add_notice(__('Session creation failed: ' . $session_response['message'], 'woocommerce'), 'error');
+                return false;
+            }
+
+            // Prepare payload for Pylon Process Transaction
             $payload = array(
-                'cardNumber' => $cc_number,
-                'expiryDate' => $cc_expiry,
-                'cvc' => $cc_cvc,
-                'amount' => $order->get_total(),
-                'currency' => get_woocommerce_currency(),
-                'orderDescription' => 'Order ' . $order->get_order_number(),
-                'customerOrderCode' => $order->get_order_number(),
+                'sessionUrl' => $session_response['sessionUrl'],
+                'order' => array(
+                    'merchant' => array(
+                        'id' => 3 // Assuming merchant ID is constant; replace with actual ID if dynamic
+                    ),
+                    'buyer' => array(
+                        'isShippingEqualBilling' => true,
+                        'billingAddress' => array(
+                            'firstName' => $order->get_billing_first_name(),
+                            'lastName' => $order->get_billing_last_name(),
+                            'address1' => $order->get_billing_address_1(),
+                            'postalCode' => $order->get_billing_postcode(),
+                            'city' => $order->get_billing_city(),
+                            'state' => $order->get_billing_state(),
+                            'countryCode' => $order->get_billing_country()
+                        )
+                    ),
+                    'value' => array(
+                        'currency' => get_woocommerce_currency(),
+                        'amount' => $order->get_total() * 100 // Assuming the API expects the amount in cents
+                    )
+                )
             );
 
             // Call Pylon API
@@ -184,8 +252,7 @@ function client33_init_gateway_class() {
         }
 
         private function send_transaction_to_pylon($data) {
-            $api_url = 'https://pylon.sh/transaction'; // Replace with actual Pylon API URL
-            $api_key = 'your_api_key_here'; // Replace with your actual API key
+            $api_url = 'https://pylon-v2-staging.up.railway.app/v1/transaction/process?paymentProcessor=WORLDPAY'; // Replace with actual Pylon API URL
 
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $api_url);
@@ -194,7 +261,6 @@ function client33_init_gateway_class() {
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 'Content-Type: application/json',
-                'Authorization: Bearer ' . $api_key
             ]);
 
             $response = curl_exec($ch);
