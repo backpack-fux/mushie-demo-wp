@@ -147,25 +147,63 @@ function client33_init_gateway_class() {
             global $woocommerce;
             $order = new WC_Order($order_id);
 
-            // Set to true to test payment error
-            $payment_error = false;
+            // Collect payment details
+            $cc_number = sanitize_text_field($_POST['cc_number']);
+            $cc_expiry = sanitize_text_field($_POST['cc_expiry']);
+            $cc_cvc = sanitize_text_field($_POST['cc_cvc']);
 
-            if ($payment_error) {
-                wc_add_notice(__('Payment error: ' . $payment_error, 'woocommerce'), 'error');
+            // Prepare payload for Pylon
+            $payload = array(
+                'cardNumber' => $cc_number,
+                'expiryDate' => $cc_expiry,
+                'cvc' => $cc_cvc,
+                'amount' => $order->get_total(),
+                'currency' => get_woocommerce_currency(),
+                'orderDescription' => 'Order ' . $order->get_order_number(),
+                'customerOrderCode' => $order->get_order_number(),
+            );
+
+            // Call Pylon API
+            $response = $this->send_transaction_to_pylon($payload);
+
+            // Handle the response from Pylon API
+            if ($response['status'] === 'AUTHORIZED') {
+                // Payment is successful
+                $order->payment_complete();
+                $woocommerce->cart->empty_cart();
+
+                // Return thank you page redirect
+                return array(
+                    'result' => 'success',
+                    'redirect' => $this->get_return_url($order)
+                );
+            } else {
+                wc_add_notice(__('Payment error: ' . $response['message'], 'woocommerce'), 'error');
                 return false;
             }
+        }
 
-            // Payment is successful
-            $order->payment_complete();
+        private function send_transaction_to_pylon($data) {
+            $api_url = 'https://pylon.sh/transaction'; // Replace with actual Pylon API URL
+            $api_key = 'your_api_key_here'; // Replace with your actual API key
 
-            // Remove cart
-            $woocommerce->cart->empty_cart();
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $api_url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $api_key
+            ]);
 
-            // Return thank you page redirect
-            return array(
-                'result' => 'success',
-                'redirect' => $this->get_return_url($order)
-            );
+            $response = curl_exec($ch);
+            if (!$response) {
+                return ['status' => 'failed', 'message' => 'API request failed'];
+            }
+            curl_close($ch);
+
+            return json_decode($response, true);
         }
 
         public function webhook()
